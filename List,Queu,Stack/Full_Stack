@@ -1,0 +1,428 @@
+import java.util.*;
+
+public class StackProblems {
+
+    // 1. Implement stack using array
+    static class ArrayStack {
+        int[] stack;
+        int top;
+        int capacity;
+
+        ArrayStack(int capacity) {
+            this.capacity = capacity;
+            stack = new int[capacity];
+            top = -1;
+        }
+
+        void push(int x) {
+            if (top == capacity - 1) {
+                System.out.println("Stack Overflow");
+                return;
+            }
+            stack[++top] = x;
+        }
+
+        int pop() {
+            return top == -1 ? -1 : stack[top--];
+        }
+
+        int peek() {
+            return top == -1 ? -1 : stack[top];
+        }
+
+        boolean isEmpty() {
+            return top == -1;
+        }
+
+        void display() {
+            for (int i = 0; i <= top; i++)
+                System.out.print(stack[i] + " ");
+            System.out.println();
+        }
+    }
+
+    // 2. Stack using Linked List
+    static class LinkedStack {
+        static class Node {
+            int data;
+            Node next;
+            Node(int data) {
+                this.data = data;
+            }
+        }
+
+        Node top;
+
+        void push(int x) {
+            Node newNode = new Node(x);
+            newNode.next = top;
+            top = newNode;
+        }
+
+        int pop() {
+            if (top == null) return -1;
+            int val = top.data;
+            top = top.next;
+            return val;
+        }
+
+        int peek() {
+            return top != null ? top.data : -1;
+        }
+
+        boolean isEmpty() {
+            return top == null;
+        }
+
+        void display() {
+            Node curr = top;
+            while (curr != null) {
+                System.out.print(curr.data + " ");
+                curr = curr.next;
+            }
+            System.out.println();
+        }
+    }
+
+    // 3. Reverse a stack
+    static void reverseStack(Stack<Integer> s) {
+        if (s.isEmpty()) return;
+        int temp = s.pop();
+        reverseStack(s);
+        insertAtBottom(s, temp);
+    }
+
+    static void insertAtBottom(Stack<Integer> s, int x) {
+        if (s.isEmpty()) {
+            s.push(x);
+            return;
+        }
+        int temp = s.pop();
+        insertAtBottom(s, x);
+        s.push(temp);
+    }
+
+    // 4. Sort a stack
+    static void sortStack(Stack<Integer> s) {
+        if (!s.isEmpty()) {
+            int temp = s.pop();
+            sortStack(s);
+            sortedInsert(s, temp);
+        }
+    }
+
+    static void sortedInsert(Stack<Integer> s, int x) {
+        if (s.isEmpty() || x > s.peek()) {
+            s.push(x);
+            return;
+        }
+        int temp = s.pop();
+        sortedInsert(s, x);
+        s.push(temp);
+    }
+
+    // 5. Next Greater Element
+    static void nextGreater(int[] arr) {
+        Stack<Integer> s = new Stack<>();
+        int[] res = new int[arr.length];
+
+        for (int i = arr.length - 1; i >= 0; i--) {
+            while (!s.isEmpty() && s.peek() <= arr[i]) s.pop();
+            res[i] = s.isEmpty() ? -1 : s.peek();
+            s.push(arr[i]);
+        }
+
+        System.out.println(Arrays.toString(res));
+    }
+
+    // 6. Balanced Parentheses
+    static boolean isBalanced(String expr) {
+        Stack<Character> s = new Stack<>();
+        for (char c : expr.toCharArray()) {
+            if (c == '(' || c == '{' || c == '[') s.push(c);
+            else {
+                if (s.isEmpty()) return false;
+                char top = s.pop();
+                if ((c == ')' && top != '(') || (c == '}' && top != '{') || (c == ']' && top != '['))
+                    return false;
+            }
+        }
+        return s.isEmpty();
+    }
+
+    // 7. Infix to Postfix
+    static String infixToPostfix(String exp) {
+        StringBuilder result = new StringBuilder();
+        Stack<Character> stack = new Stack<>();
+        for (char c : exp.toCharArray()) {
+            if (Character.isLetterOrDigit(c)) result.append(c);
+            else if (c == '(') stack.push(c);
+            else if (c == ')') {
+                while (!stack.isEmpty() && stack.peek() != '(') result.append(stack.pop());
+                stack.pop();
+            } else {
+                while (!stack.isEmpty() && precedence(c) <= precedence(stack.peek())) result.append(stack.pop());
+                stack.push(c);
+            }
+        }
+        while (!stack.isEmpty()) result.append(stack.pop());
+        return result.toString();
+    }
+
+    static int precedence(char c) {
+        switch (c) {
+            case '+': case '-': return 1;
+            case '*': case '/': return 2;
+        }
+        return -1;
+    }
+
+    // 8. Postfix Evaluation
+    static int evalPostfix(String exp) {
+        Stack<Integer> stack = new Stack<>();
+        for (char c : exp.toCharArray()) {
+            if (Character.isDigit(c)) stack.push(c - '0');
+            else {
+                int b = stack.pop();
+                int a = stack.pop();
+                switch (c) {
+                    case '+': stack.push(a + b); break;
+                    case '-': stack.push(a - b); break;
+                    case '*': stack.push(a * b); break;
+                    case '/': stack.push(a / b); break;
+                }
+            }
+        }
+        return stack.pop();
+    }
+
+    // 9. Min Stack
+    static class MinStack {
+        Stack<Integer> main = new Stack<>();
+        Stack<Integer> min = new Stack<>();
+
+        void push(int x) {
+            main.push(x);
+            if (min.isEmpty() || x <= min.peek()) min.push(x);
+        }
+
+        void pop() {
+            if (main.peek().equals(min.peek())) min.pop();
+            main.pop();
+        }
+
+        int getMin() {
+            return min.peek();
+        }
+    }
+
+    // 10. Celebrity Problem
+    static int celebrity(int[][] M, int n) {
+        Stack<Integer> s = new Stack<>();
+        for (int i = 0; i < n; i++) s.push(i);
+
+        while (s.size() > 1) {
+            int a = s.pop(), b = s.pop();
+            if (M[a][b] == 1) s.push(b);
+            else s.push(a);
+        }
+
+        int c = s.pop();
+        for (int i = 0; i < n; i++) {
+            if (i != c && (M[c][i] == 1 || M[i][c] == 0)) return -1;
+        }
+        return c;
+    }
+
+    // 11. Stock Span Problem
+    static void stockSpan(int[] prices) {
+        Stack<Integer> s = new Stack<>();
+        int[] span = new int[prices.length];
+        for (int i = 0; i < prices.length; i++) {
+            while (!s.isEmpty() && prices[s.peek()] <= prices[i]) s.pop();
+            span[i] = s.isEmpty() ? i + 1 : i - s.peek();
+            s.push(i);
+        }
+        System.out.println(Arrays.toString(span));
+    }
+
+    // 12. Largest Rectangle in Histogram
+    static int largestRectangle(int[] heights) {
+        Stack<Integer> s = new Stack<>();
+        int max = 0, i = 0;
+        while (i < heights.length) {
+            if (s.isEmpty() || heights[i] >= heights[s.peek()]) s.push(i++);
+            else {
+                int h = heights[s.pop()];
+                int w = s.isEmpty() ? i : i - s.peek() - 1;
+                max = Math.max(max, h * w);
+            }
+        }
+        while (!s.isEmpty()) {
+            int h = heights[s.pop()];
+            int w = s.isEmpty() ? i : i - s.peek() - 1;
+            max = Math.max(max, h * w);
+        }
+        return max;
+    }
+
+    // 13. Redundant Brackets
+    static boolean hasRedundant(String expr) {
+        Stack<Character> s = new Stack<>();
+        for (char c : expr.toCharArray()) {
+            if (c == ')') {
+                char top = s.pop();
+                boolean flag = true;
+                while (top != '(') {
+                    if (top == '+' || top == '-' || top == '*' || top == '/') flag = false;
+                    top = s.pop();
+                }
+                if (flag) return true;
+            } else {
+                s.push(c);
+            }
+        }
+        return false;
+    }
+
+    // 14. Remove adjacent duplicates
+    static String removeDuplicates(String s) {
+        Stack<Character> stack = new Stack<>();
+        for (char c : s.toCharArray()) {
+            if (!stack.isEmpty() && stack.peek() == c) stack.pop();
+            else stack.push(c);
+        }
+        StringBuilder sb = new StringBuilder();
+        for (char c : stack) sb.append(c);
+        return sb.toString();
+    }
+
+    // 15. Reverse string using stack
+    static String reverse(String s) {
+        Stack<Character> st = new Stack<>();
+        for (char c : s.toCharArray()) st.push(c);
+        StringBuilder sb = new StringBuilder();
+        while (!st.isEmpty()) sb.append(st.pop());
+        return sb.toString();
+    }
+
+    // 16. Check duplicate parentheses
+    static boolean hasDuplicateParentheses(String expr) {
+        Stack<Character> s = new Stack<>();
+        for (char c : expr.toCharArray()) {
+            if (c == ')') {
+                int count = 0;
+                while (s.pop() != '(') count++;
+                if (count == 0) return true;
+            } else {
+                s.push(c);
+            }
+        }
+        return false;
+    }
+
+    // 17. Valid Parentheses String (with *, Leetcode 678)
+    static boolean checkValidString(String s) {
+        Stack<Integer> open = new Stack<>();
+        Stack<Integer> star = new Stack<>();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(') open.push(i);
+            else if (c == '*') star.push(i);
+            else {
+                if (!open.isEmpty()) open.pop();
+                else if (!star.isEmpty()) star.pop();
+                else return false;
+            }
+        }
+        while (!open.isEmpty() && !star.isEmpty()) {
+            if (open.pop() > star.pop()) return false;
+        }
+        return open.isEmpty();
+    }
+
+    // 18. Design Special Stack (with min in O(1))
+    static class SpecialStack {
+        Stack<Integer> s = new Stack<>();
+        Stack<Integer> min = new Stack<>();
+
+        void push(int x) {
+            s.push(x);
+            if (min.isEmpty() || x <= min.peek()) min.push(x);
+        }
+
+        int pop() {
+            if (s.peek().equals(min.peek())) min.pop();
+            return s.pop();
+        }
+
+        int getMin() {
+            return min.peek();
+        }
+    }
+
+    // 19. Convert Postfix to Prefix
+    static String postfixToPrefix(String exp) {
+        Stack<String> s = new Stack<>();
+        for (char c : exp.toCharArray()) {
+            if (Character.isLetterOrDigit(c)) s.push(String.valueOf(c));
+            else {
+                String b = s.pop(), a = s.pop();
+                s.push(c + a + b);
+            }
+        }
+        return s.pop();
+    }
+
+    // 20. Convert Prefix to Infix
+    static String prefixToInfix(String exp) {
+        Stack<String> s = new Stack<>();
+        for (int i = exp.length() - 1; i >= 0; i--) {
+            char c = exp.charAt(i);
+            if (Character.isLetterOrDigit(c)) s.push(c + "");
+            else {
+                String a = s.pop(), b = s.pop();
+                s.push("(" + a + c + b + ")");
+            }
+        }
+        return s.pop();
+    }
+
+    public static void main(String[] args) {
+        ArrayStack as = new ArrayStack(5);
+        as.push(1); as.push(2); as.display();
+
+        LinkedStack ls = new LinkedStack();
+        ls.push(10); ls.push(20); ls.display();
+
+        Stack<Integer> s = new Stack<>();
+        s.push(3); s.push(1); s.push(2);
+        reverseStack(s); System.out.println("Reversed: " + s);
+
+        Stack<Integer> ss = new Stack<>();
+        ss.push(3); ss.push(1); ss.push(4); sortStack(ss);
+        System.out.println("Sorted: " + ss);
+
+        nextGreater(new int[]{4, 5, 2, 10});
+        System.out.println(isBalanced("{[()]}"));
+        System.out.println("Postfix: " + infixToPostfix("a+b*(c^d-e)"));
+        System.out.println("Postfix Eval: " + evalPostfix("231*+9-"));
+
+        MinStack minStack = new MinStack();
+        minStack.push(5); minStack.push(2); minStack.push(10);
+        System.out.println("Min: " + minStack.getMin());
+
+        System.out.println("Celebrity: " + celebrity(new int[][]{{0, 1}, {0, 0}}, 2));
+        stockSpan(new int[]{100, 80, 60, 70, 60, 75, 85});
+        System.out.println("Largest Rectangle: " + largestRectangle(new int[]{2, 1, 5, 6, 2, 3}));
+        System.out.println("Redundant: " + hasRedundant("((a+b))"));
+        System.out.println("Remove duplicates: " + removeDuplicates("azxxzy"));
+        System.out.println("Reverse string: " + reverse("hello"));
+        System.out.println("Duplicate parentheses: " + hasDuplicateParentheses("((a+b))"));
+        System.out.println("Valid parentheses with *: " + checkValidString("(*)"));
+        SpecialStack spStack = new SpecialStack();
+        spStack.push(3); spStack.push(1); System.out.println("Special min: " + spStack.getMin());
+        System.out.println("Postfix to Prefix: " + postfixToPrefix("ab+cd-*"));
+        System.out.println("Prefix to Infix: " + prefixToInfix("*+AB-CD"));
+    }
+}
