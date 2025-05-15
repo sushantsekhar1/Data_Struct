@@ -1,0 +1,336 @@
+import java.util.*;
+
+public class QueueProblems {
+
+    // 1. Queue using array
+    static class ArrayQueue {
+        int front, rear, size, capacity;
+        int[] queue;
+
+        ArrayQueue(int capacity) {
+            this.capacity = capacity;
+            front = 0;
+            rear = -1;
+            size = 0;
+            queue = new int[capacity];
+        }
+
+        boolean isFull() {
+            return size == capacity;
+        }
+
+        boolean isEmpty() {
+            return size == 0;
+        }
+
+        void enqueue(int data) {
+            if (isFull()) {
+                System.out.println("Queue is full");
+                return;
+            }
+            rear = (rear + 1) % capacity;
+            queue[rear] = data;
+            size++;
+        }
+
+        int dequeue() {
+            if (isEmpty()) return -1;
+            int item = queue[front];
+            front = (front + 1) % capacity;
+            size--;
+            return item;
+        }
+
+        int peek() {
+            return isEmpty() ? -1 : queue[front];
+        }
+
+        int getSize() {
+            return size;
+        }
+
+        void printQueue() {
+            for (int i = 0; i < size; i++)
+                System.out.print(queue[(front + i) % capacity] + " ");
+            System.out.println();
+        }
+    }
+
+    // 2. Queue using LinkedList
+    static class LinkedQueue {
+        static class Node {
+            int data;
+            Node next;
+            Node(int data) {
+                this.data = data;
+                this.next = null;
+            }
+        }
+
+        Node front, rear;
+
+        void enqueue(int data) {
+            Node newNode = new Node(data);
+            if (rear == null) {
+                front = rear = newNode;
+                return;
+            }
+            rear.next = newNode;
+            rear = newNode;
+        }
+
+        int dequeue() {
+            if (front == null) return -1;
+            int val = front.data;
+            front = front.next;
+            if (front == null) rear = null;
+            return val;
+        }
+
+        int peek() {
+            return front != null ? front.data : -1;
+        }
+
+        void display() {
+            Node temp = front;
+            while (temp != null) {
+                System.out.print(temp.data + " ");
+                temp = temp.next;
+            }
+            System.out.println();
+        }
+    }
+
+    // 3. Circular Queue (Array)
+    static class CircularQueue extends ArrayQueue {
+        CircularQueue(int capacity) {
+            super(capacity);
+        }
+    }
+
+    // 4. Deque
+    static class DequeCustom {
+        Deque<Integer> deque = new LinkedList<>();
+
+        void addFront(int x) {
+            deque.addFirst(x);
+        }
+
+        void addRear(int x) {
+            deque.addLast(x);
+        }
+
+        void removeFront() {
+            if (!deque.isEmpty()) deque.pollFirst();
+        }
+
+        void removeRear() {
+            if (!deque.isEmpty()) deque.pollLast();
+        }
+
+        void display() {
+            System.out.println(deque);
+        }
+    }
+
+    // 5. Queue using two stacks
+    static class QueueUsingStacks {
+        Stack<Integer> s1 = new Stack<>();
+        Stack<Integer> s2 = new Stack<>();
+
+        void enqueue(int x) {
+            while (!s1.isEmpty()) s2.push(s1.pop());
+            s1.push(x);
+            while (!s2.isEmpty()) s1.push(s2.pop());
+        }
+
+        int dequeue() {
+            if (s1.isEmpty()) return -1;
+            return s1.pop();
+        }
+
+        void display() {
+            System.out.println(s1);
+        }
+    }
+
+    // 6. Stack using two queues
+    static class StackUsingQueues {
+        Queue<Integer> q1 = new LinkedList<>();
+        Queue<Integer> q2 = new LinkedList<>();
+
+        void push(int x) {
+            q2.add(x);
+            while (!q1.isEmpty()) q2.add(q1.poll());
+            Queue<Integer> temp = q1;
+            q1 = q2;
+            q2 = temp;
+        }
+
+        int pop() {
+            return q1.isEmpty() ? -1 : q1.poll();
+        }
+
+        void display() {
+            System.out.println(q1);
+        }
+    }
+
+    // 7. Reverse a queue using stack
+    static Queue<Integer> reverseQueue(Queue<Integer> q) {
+        Stack<Integer> s = new Stack<>();
+        while (!q.isEmpty()) s.push(q.poll());
+        while (!s.isEmpty()) q.add(s.pop());
+        return q;
+    }
+
+    // 8. Reverse first K elements
+    static Queue<Integer> reverseFirstK(Queue<Integer> q, int k) {
+        Stack<Integer> s = new Stack<>();
+        for (int i = 0; i < k; i++) s.push(q.poll());
+        while (!s.isEmpty()) q.add(s.pop());
+        int size = q.size();
+        for (int i = 0; i < size - k; i++) q.add(q.poll());
+        return q;
+    }
+
+    // 9. Check palindrome using queue
+    static boolean isPalindrome(String str) {
+        Queue<Character> q = new LinkedList<>();
+        Stack<Character> s = new Stack<>();
+        for (char c : str.toCharArray()) {
+            q.add(c);
+            s.push(c);
+        }
+        while (!q.isEmpty()) {
+            if (q.poll() != s.pop()) return false;
+        }
+        return true;
+    }
+
+    // 10. Interleave queue halves
+    static void interleaveQueue(Queue<Integer> q) {
+        int size = q.size() / 2;
+        Queue<Integer> firstHalf = new LinkedList<>();
+        for (int i = 0; i < size; i++) firstHalf.add(q.poll());
+        while (!firstHalf.isEmpty()) {
+            q.add(firstHalf.poll());
+            q.add(q.poll());
+        }
+    }
+
+    // 11. Sort a queue
+    static void sortQueue(Queue<Integer> q) {
+        List<Integer> list = new ArrayList<>(q);
+        Collections.sort(list);
+        q.clear();
+        q.addAll(list);
+    }
+
+    // 12. Generate binary numbers from 1 to N
+    static void generateBinary(int n) {
+        Queue<String> q = new LinkedList<>();
+        q.add("1");
+        for (int i = 0; i < n; i++) {
+            String s = q.poll();
+            System.out.print(s + " ");
+            q.add(s + "0");
+            q.add(s + "1");
+        }
+        System.out.println();
+    }
+
+    // 13. LRU Cache using Queue + Set
+    static class LRUCache {
+        int capacity;
+        Queue<Integer> queue = new LinkedList<>();
+        Set<Integer> set = new HashSet<>();
+
+        LRUCache(int capacity) {
+            this.capacity = capacity;
+        }
+
+        void refer(int x) {
+            if (!set.contains(x)) {
+                if (queue.size() == capacity) {
+                    int removed = queue.poll();
+                    set.remove(removed);
+                }
+                queue.add(x);
+                set.add(x);
+            } else {
+                queue.remove(x);
+                queue.add(x);
+            }
+        }
+
+        void display() {
+            System.out.println(queue);
+        }
+    }
+
+    // 14. Priority Queue
+    static void priorityQueueDemo() {
+        PriorityQueue<Integer> pq = new PriorityQueue<>();
+        pq.add(10); pq.add(2); pq.add(14);
+        while (!pq.isEmpty()) {
+            System.out.print(pq.poll() + " ");
+        }
+        System.out.println();
+    }
+
+    // 15. First non-repeating character in stream
+    static void firstNonRepeating(String str) {
+        Queue<Character> q = new LinkedList<>();
+        int[] freq = new int[26];
+        for (char c : str.toCharArray()) {
+            freq[c - 'a']++;
+            q.add(c);
+            while (!q.isEmpty() && freq[q.peek() - 'a'] > 1)
+                q.poll();
+            System.out.print(q.isEmpty() ? -1 : q.peek());
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        System.out.println("Basic Queue:");
+        ArrayQueue aq = new ArrayQueue(5);
+        aq.enqueue(10); aq.enqueue(20); aq.enqueue(30);
+        aq.printQueue(); aq.dequeue(); aq.printQueue();
+
+        System.out.println("\nLinked Queue:");
+        LinkedQueue lq = new LinkedQueue();
+        lq.enqueue(1); lq.enqueue(2); lq.enqueue(3); lq.display();
+
+        System.out.println("\nQueue using Two Stacks:");
+        QueueUsingStacks qs = new QueueUsingStacks();
+        qs.enqueue(5); qs.enqueue(10); qs.dequeue(); qs.display();
+
+        System.out.println("\nReverse Queue:");
+        Queue<Integer> q = new LinkedList<>(List.of(1, 2, 3));
+        System.out.println(reverseQueue(q));
+
+        System.out.println("\nFirst K reverse:");
+        Queue<Integer> q2 = new LinkedList<>(List.of(1, 2, 3, 4, 5));
+        System.out.println(reverseFirstK(q2, 3));
+
+        System.out.println("\nPalindrome check:");
+        System.out.println(isPalindrome("radar"));
+
+        System.out.println("\nBinary numbers:");
+        generateBinary(5);
+
+        System.out.println("\nLRU Cache:");
+        LRUCache cache = new LRUCache(3);
+        cache.refer(1); cache.refer(2); cache.refer(3);
+        cache.refer(2); cache.refer(4);
+        cache.display();
+
+        System.out.println("\nPriority Queue:");
+        priorityQueueDemo();
+
+        System.out.println("\nFirst Non-Repeating Characters:");
+        firstNonRepeating("aabc");
+    }
+}
